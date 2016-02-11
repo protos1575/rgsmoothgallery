@@ -504,13 +504,20 @@ class tx_rgsmoothgallery_pi1 extends tslib_pibase {
 			if ($durationVal) {
 				$autoplayEnable = 'true';
 			}
-			$js = '<style>
+			$autoWidthHeight = 'true';
+			$style = '';
+			if (intval( $this->pi_getFFvalue( $this->cObj->data['pi_flexform'], 'heightgallery', 'sDEF' ) ) || intval( $this->pi_getFFvalue( $this->cObj->data['pi_flexform'], 'widthgallery', 'sDEF' ) )) {
+				$autoWidthHeight = 'false';
+				$style = '<style>
 
 						#nbmpRs'.$this->config['id'].' {
-							width: '.$widthGallery.'px;
-							height:'.$heightGallery.'px;
-						}
-					</style>
+									width: '.$widthGallery.'px;
+									height:'.$heightGallery.'px;
+								}
+				</style>';
+			}
+
+			$js = '
 
 				<script type="text/javascript">
 					;(function ( $, window, document, undefined ) {
@@ -527,7 +534,7 @@ class tx_rgsmoothgallery_pi1 extends tslib_pibase {
 							//keyboardNavEnabled: true
 							// autoHeight: true,
 							// minAutoHeight: \'300px\',
-							autoScaleSlider: false,
+							autoScaleSlider: '.$autoWidthHeight.',
 							//autoScaleSliderWidth: 200,
 							//autoScaleSliderHeight: 200,
 							//imageScaleMode: \'fill\',
@@ -704,7 +711,7 @@ class tx_rgsmoothgallery_pi1 extends tslib_pibase {
     		</noscript>';
 			}
 		}
-		return $js;
+		return $style.$js;
 	}
 	
 	/**
