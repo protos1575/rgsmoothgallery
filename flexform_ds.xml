@@ -96,7 +96,7 @@
 						</TCEforms>
 					</startingpointrecords>				
 
-					<width>
+					<!--width>
 						<TCEforms>
 							<label>LLL:EXT:rgsmoothgallery/locallang.xml:flexform.sheets.general.width</label>
 							<config>
@@ -114,7 +114,7 @@
 								<size>3</size>
 							</config>
 						</TCEforms>
-					</height>
+					</height-->
                   
 					<widthgallery>
 						<TCEforms>
@@ -142,7 +142,7 @@
 	  </ROOT>
     </sDEF>
 
-		<advanced>
+		<!--advanced>
 			<ROOT>
 				<TCEforms>
 				<sheetTitle>LLL:EXT:rgsmoothgallery/locallang.xml:flexform.sheets.advanced.title</sheetTitle>
@@ -213,7 +213,7 @@
                 <checkbox>0</checkbox>
               </config>
             </TCEforms>
-          </limitImagesDisplayed>	
+          </limitImagesDisplayed-->
 
 
                     
@@ -238,7 +238,7 @@
           </advanced>
 -->
           
-          <thumbopacity>
+          <!--thumbopacity>
             <TCEforms>
               <label>LLL:EXT:rgsmoothgallery/locallang.xml:flexform.sheets.advanced.thumbopacity</label>
               <config>
@@ -317,7 +317,7 @@
 
 	    </el>
 	  </ROOT>
-    </advanced>
+    </advanced-->
     			
   </sheets>
 </T3DataStructure>

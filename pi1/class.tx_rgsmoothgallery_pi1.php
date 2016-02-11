@@ -161,6 +161,13 @@ class tx_rgsmoothgallery_pi1 extends tslib_pibase {
 		$this->pi_loadLL();
 		$this->pi_USER_INT_obj = 0; // Configuring so caching is expected. 
 		$this->pi_initPIflexForm(); // Init FlexForm configuration for plugin
+
+		$GLOBALS['TSFE']->additionalHeaderData[$this->extKey] = '
+		  <script type="text/javascript" src="'.\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath($this->extKey).'res/royalslider/jquery.royalslider.min.js"></script>
+		  <link rel="stylesheet" type="text/css" href="'.\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath($this->extKey).'res/royalslider/royalslider.css" />
+		  <link rel="stylesheet" type="text/css" href="'.\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath($this->extKey).'res/royalslider/skins/default/rs-default.css" />
+		  <link rel="stylesheet" type="text/css" href="'.\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath($this->extKey).'res/royalslider/royalSlider-custom.css" />
+		  ';
 		
 		if ($this->conf['pathToJdgalleryJS'] == '') {
 			return $this->pi_getLL( 'errorIncludeStatic' );
@@ -188,7 +195,7 @@ class tx_rgsmoothgallery_pi1 extends tslib_pibase {
 		}
 	
 	} # end main
-	
+
 
 	/**
 	 * Just some divs needed for the gallery
@@ -198,31 +205,30 @@ class tx_rgsmoothgallery_pi1 extends tslib_pibase {
 	 */
 	function beginGallery($uniqueId, $limitImages = 0) {
 		if ($limitImages == 1) {
-			$content = '<div class="rgsgcontent"><div class="myGallery-NoScript" id="myGallery-NoScript' . $uniqueId . '">';
+			$content = '<div class="royalSlider rsDefault" id="nbmpRs' . $uniqueId . '">';
 		}
 		else {
-			$content = '<div class="rgsgcontent"><div class="myGallery" id="myGallery' . $uniqueId . '">';
+			$content = '<div class="royalSlider rsDefault" id="nbmpRs' . $uniqueId . '">';
 		}
-		
-		// Save button && Print button
-		$content .= '<div class="rgsg-btn" style="display:none">' . $this->conf['enableSaveButton'] . $this->conf['enablePrintButton'] . '</div>';
-		
+		$content .= '<!-- TTNEWS_YOUTUBE -->';
+
 		if (is_array( $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['rgsmoothgallery']['extraBeginGalleryHook'] )) {
 			foreach ( $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['rgsmoothgallery']['extraBeginGalleryHook'] as $_classRef ) {
 				$_procObj = & t3lib_div::getUserObj( $_classRef );
 				$content = $_procObj->extraBeginGalleryProcessor( $content, $limitImages, $this );
 			}
 		}
+
 		return $content;
 	} # end beginGallery
-	
+
 	/**
 	 * Just some divs needed for the gallery
 	 *
 	 * @return	The closed divs
 	 */
 	function endGallery() {
-		$content = '</div></div>';
+		$content = '</div>';
 		if (is_array( $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['rgsmoothgallery']['extraEndGalleryHook'] )) {
 			foreach ( $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['rgsmoothgallery']['extraEndGalleryHook'] as $_classRef ) {
 				$_procObj = & t3lib_div::getUserObj( $_classRef );
@@ -231,6 +237,7 @@ class tx_rgsmoothgallery_pi1 extends tslib_pibase {
 		}
 		return $content;
 	} # end endGallery
+
 	
 	/**
 	 * get the images out of a directory
@@ -471,10 +478,10 @@ class tx_rgsmoothgallery_pi1 extends tslib_pibase {
 		$content .= $this->endGallery();
 		return $content;
 	}
-	
+
 	/**
-	 * Loads all the needed javascript stuff and 
-	 * does the configuration of the gallery	 	 
+	 * Loads all the needed javascript stuff and
+	 * does the configuration of the gallery
 	 *
 	 * @param	boolean  $lightboxVal: Lightbox activated=
 	 * @param	boolean  $thumbsVal: Thumbnail preview activated?
@@ -484,105 +491,216 @@ class tx_rgsmoothgallery_pi1 extends tslib_pibase {
 	 * @param	int      $height: Height of gallery (depricated)
 	 * @param	string   $advancedSettings: Advanced configuration
 	 * @param	string/int   $uniqueId: A unique ID to have more than 1 galleries on 1 page
-	 * $param array    $conf: $configuration-array	 
+	 * $param array    $conf: $configuration-array
 	 * @return	The gallery
 	 */
 	function getJs($lightboxVal, $thumbsVal, $arrowsVal, $durationVal, $width, $height, $widthGallery, $heightGallery, $advancedSettings, $uniqueId, $conf, $overrideJS = '') {
 		$this->conf = $conf;
-		
-		if (t3lib_extMgm::isLoaded( 't3mootools' )) {
-			require_once(t3lib_extMgm::extPath( 't3mootools' ) . 'class.tx_t3mootools.php');
-		}
-		if (defined( 'T3MOOTOOLS' )) {
-			tx_t3mootools::addMooJS();
-		} else {
-			$header .= $this->getPath( $this->conf['pathToMootools'] ) ? '<script src="' . $this->getPath( $this->conf['pathToMootools'] ) . '" type="text/javascript"></script>' : '';
-		}
-		
-		// path to js + css
-		$GLOBALS['TSFE']->additionalHeaderData['rgsmoothgallery'] = $header . '
-        <script src="' . $this->getPath( $this->conf['pathToJdgalleryJS'] ) . '" type="text/javascript"></script>
-        <script src="' . $this->getPath( $this->conf['pathToSlightboxJS'] ) . '" type="text/javascript"></script>
-        <link rel="stylesheet" href="' . $this->getPath( $this->conf['pathToJdgalleryCSS'] ) . '" type="text/css" media="screen" />
-        <link rel="stylesheet" href="' . $this->getPath( $this->conf['pathToSlightboxCSS'] ) . '" type="text/css" media="screen" />
-      ';
-		
-		if ($this->config['externalControl'] == 1) {
-			$externalControl1 = 'var myGallery' . $uniqueId . ';';
-		} else {
-			$externalControl2 = 'var';
-		}
-		
-		// inline CSS for different size of gallery 
-		$widthGallery = $widthGallery ? 'width:' . $widthGallery . 'px;' : '';
-		$heightGallery = $heightGallery ? 'height:' . $heightGallery . 'px;' : '';
-		if ($heightGallery != '' || $widthGallery != '') {
-			$GLOBALS['TSFE']->additionalCSS['rgsmoothgallery' . $uniqueId] = '#myGallery' . $uniqueId . ' {' . $widthGallery . $heightGallery . '}';
-		}
-		
-		// inline CSS for the loading bar if plugin not loaded and for the given height of the gallery
-		$GLOBALS['TSFE']->additionalCSS['rgsmoothgallery' . $uniqueId] .= ' .rgsgnest' . $uniqueId . ' { ' . $widthGallery . $heightGallery . ' }';
-		
-		if ($this->conf['rgsmoothgallerylinks'] == 1) {
-			$GLOBALS['TSFE']->additionalCSS['rgsmoothgallery' . $uniqueId] .= ' .rgsglinks' . $uniqueId . ' { ' . $widthGallery . ' }';
-		}
-		
-		// configuration of gallery
-		$lightbox = ($lightboxVal == 1) ? 'true' : 'false';
-		$duration = ($durationVal) ? 'timed:true,delay: ' . $durationVal : 'timed:false';
-		$thumbs = ($thumbsVal == 1) ? 'true' : 'false';
-		$arrows = ($arrowsVal == 1) ? 'true' : 'false';
-		
-		// advanced settings (from TS + tab flexform configuration)
-		$advancedSettings .= ($this->config['hideInfoPane']) ? 'showInfopane: false,' : '';
-		if ($this->config['thumbOpacity'] && $this->config['thumbOpacity'] > 0 && $this->config['thumbOpacity']<=1) $advancedSettings.= 'thumbOpacity: '.$this->config['thumbOpacity'].',';
-		if (!$this->config['hideInfoPane'] && $this->config['slideInfoZoneOpacity'] && $this->config['slideInfoZoneOpacity'] > 0 && $this->config['slideInfoZoneOpacity']<=1) $advancedSettings.= 'slideInfoZoneOpacity: '.$this->config['slideInfoZoneOpacity'].',';  		   
-		$advancedSettings .= ($this->config['thumbSpacing']) ? 'thumbSpacing: ' . $this->config['thumbSpacing'] . ',' : '';
-		$advancedSettings .= ($this->config['showPlay']) ? 'showPlay: true,' : '';
-		
-		// external thumbs
-		$advancedSettings .= ($this->config['externalThumbs']) ? 'useExternalCarousel:true,carouselElement:$("' . $this->config['externalThumbs'] . '"),' : '';
-		# 
-
-		// js needed to load the gallery and to get it started  
+		// js needed to load the gallery and to get it started
 		if ($overrideJS != '') {
 			$js = $overrideJS;
 		} else {
-			$js .= '
-    		<script type="text/javascript">' . $externalControl1 . '
-    			function startGallery' . $uniqueId . '() {
-    			  if(window.gallery' . $uniqueId . ')
-    			    {
-    			    try
-    			      {
-    				    ' . $externalControl2 . ' myGallery' . $uniqueId . ' = new gallery($(\'myGallery' . $uniqueId . '\'), {
-    					    ' . $duration . ',
-    					      showArrows: ' . $arrows . ',
-                  showCarousel: ' . $thumbs . ',
-                  textShowCarousel: \'' . $this->pi_getLL( 'textShowCarousel' ) . '\',
-                  embedLinks:' . $lightbox . ',
-                  ' . $advancedSettings . '
-    					    lightbox:true
-    				    });
-    				    var mylightbox = new LightboxSmoothgallery();
-    				    }catch(error){
-    				    window.setTimeout("startGallery' . $uniqueId . '();",2500);
-    				    }
-    				  }else{
-    				  window.gallery' . $uniqueId . '=true;
-    				  if(this.ie)
-    				    {
-    				    window.setTimeout("startGallery' . $uniqueId . '();",3000);
-    				    }else{
-    				    window.setTimeout("startGallery' . $uniqueId . '();",100);
-    				    }
-    				  }
-    			}
-    			window.onDomReady(startGallery' . $uniqueId . ');
-    		</script>';
+			$autoplayEnable = 'false';
+			if ($durationVal) {
+				$autoplayEnable = 'true';
+			}
+			$js = '<style>
+
+						#nbmpRs'.$this->config['id'].' {
+							width: '.$widthGallery.'px;
+							height:'.$heightGallery.'px;
+						}
+					</style>
+
+				<script type="text/javascript">
+					;(function ( $, window, document, undefined ) {
+						"use strict";
+
+						if (!$.jQueryObj) {
+							$.jQueryObj = {};
+						}
+
+
+						var defaultSliderOptions = {
+							// options go here
+							// as an example, enable keyboard arrows nav
+							//keyboardNavEnabled: true
+							// autoHeight: true,
+							// minAutoHeight: \'300px\',
+							autoScaleSlider: false,
+							//autoScaleSliderWidth: 200,
+							//autoScaleSliderHeight: 200,
+							//imageScaleMode: \'fill\',
+							/*
+							 imageScaleMode: function (slideObject) {
+							 if (slideObject.isFullscreen) {
+							 return \'fit-if-smaller\';
+							 }
+							 return \'fill\';
+							 },
+							 */
+							imageScalePadding: 0,
+							//slidesSpacing: 0,
+							//addActiveClass: true,
+							transitionType: \'fade\',
+							transitionSpeed: 1000,
+							//arrowsNavAutoHide: false,
+							arrowsNavHideOnTouch: true,
+							/*
+							thumbs: {
+								spacing: 1,
+								navigation: false
+
+							},
+							*/
+							//controlNavigation: \'thumbnails\',
+							//		controlNavigation: function(slideObject) {
+							//			return \'thumbnails\';
+							//		},
+							//controlNavigation: \'tabs\',
+							//controlNavigation: \'bullets\',
+							controlNavigation: \'thumbnails\',
+							fullscreen: {
+								enabled: true
+								//buttonFS: false,
+								/*
+								 buttonFS: function(slideObject) {
+								 return slideObject.isFullscreen;
+								 },
+								 */
+								//					nativeFS: true,
+							},
+							autoPlay: {
+							    enabled: ' . $autoplayEnable . ',
+							    pauseOnHover: true,
+							    delay: '.$durationVal.'
+							},
+							loop: true,
+							video: {
+								autoHideArrows: false,
+								//    autoHideControlNav: true,
+								youTubeCode: \'<iframe src="https://www.youtube.com/embed/%id%?rel=1&autoplay=1&showinfo=1" frameborder="no" width="560" height="315"></iframe>\'
+							}
+						};
+
+						defaultSliderOptions.transitionType = \'slide\';
+
+
+						var thumbSliderOptions = $.extend(true, {}, defaultSliderOptions);
+						thumbSliderOptions.controlNavigation = \'bullets\';
+					//	thumbSliderOptions.autoScaleSliderHeight = 5;
+
+						$.jQueryObj.applySlider = function(elements) {
+
+							$.each(elements, function (index, value) {
+								if ($(value).children().length) {
+									var options = defaultSliderOptions;
+
+									if ($("*", $(value)).length > 1) {
+										options = thumbSliderOptions;
+										//console.log(\'thumbslideroptiones\');
+									}
+
+									var sliderObj = $(value).royalSlider(options),
+										slider = sliderObj.data(\'royalSlider\');
+
+									if (slider.hasTouch) {
+										//$(".rsFullscreenBtn", sliderObj).removeClass("rsHidden");
+									} else {
+										var btn = $(value).find(\'.rsFullscreenBtn\').addClass(\'rsHidden\');
+										$(value).hover(function () {
+											btn.removeClass(\'rsHidden\');
+										}, function () {
+											btn.addClass(\'rsHidden\');
+										});
+
+									}
+
+									$(\'.rsContainer\', $(value)).on(\'click\', function(e) {
+										//console.log(e.target);
+										if($(e.target).hasClass(\'rsSlide\')) {
+											slider.exitFullscreen();
+										}
+									});
+
+
+									if (sliderObj) {
+
+
+										slider.updateSliderSize = function (force) {
+											$.rsProto.updateSliderSize.call(this, force);
+										};
+
+										slider.ev.on(\'rsEnterFullscreen\', function () {
+					//                        slider.stopAutoPlay();
+											//    slider.st.imageScaleMode = "fit-if-smaller";
+											slider.st.fullscreen.buttonFS = true;
+											setTimeout(function () {
+												//        slider.updateSliderSize(true);
+											}, 200);
+										});
+
+										slider.ev.on(\'rsExitFullscreen\', function () {
+					//                        slider.startAutoPlay();
+											slider.stopVideo();
+											//    slider.st.imageScaleMode = "fill";
+					//                        slider.st.fullscreen.buttonFS = false;
+											setTimeout(function () {
+												//        slider.updateSliderSize(true);
+											}, 2000);
+										});
+
+										slider.ev.on(\'rsOnCreateVideoElement\', function (e, url) {
+											if (!slider.isFullscreen) {
+												slider.enterFullscreen();
+												setTimeout(function () {
+													slider.updateSliderSize(true);
+												}, 200);
+											}
+											setTimeout(function () {
+												slider.updateSliderSize(true);
+											}, 20);
+											// url - path to video from data-rsVideo attribute
+											// slider.videoObj - jQuery object that holds video HTML code
+											// slider.videoObj must be IFRAME, VIDEO or EMBED element, or have class rsVideoObj
+											//					slider.videoObj = $(\'<iframe title="YouTube video player" width="640" height="480" src="\' + url + \'?rel=0&amp;hd=1?autoplay=1&amp;controls=1&amp;showinfo=1&amp;rel=0&amp;autohide=0&rel=0" frameborder="0" allowfullscreen></iframe>\');
+										});
+										slider.ev.on(\'rsOnDestroyVideoElement\', function (e) {
+					//                        slider.stopAutoPlay();
+											// slider.videoObj - jQuery object that holds video HTML code
+											if (slider.numSlides == 1) {
+												slider.exitFullscreen();
+											}
+										});
+
+										$(value).closest(".royalSlider").mouseleave(function (e) {
+											//slider.goTo(0);
+					//                        slider.toggleAutoPlay();
+										});
+
+										slider.ev.on(\'rsSlideClick\', function () {
+											//console.log(\'slide click\', slider, slider.ev.target);
+											if (slider.isFullscreen) {
+												//slider.exitFullscreen();
+											}
+										});
+									}
+								}
+
+							});
+						}
+
+					})( jQuery, window, document );
+
+					jQuery(document).ready(function ($) {
+
+						$.jQueryObj.applySlider($(\'.royalSlider\'));
+
+					});
+    			</script>';
 			if ($this->conf['noscript'] == 1) {
 				$js .= '<noscript>
-    		' . $this->getImageDifferentPlaces( 1 ) . '
+    		' . $this->getImageDifferentPlaces(1) . '
     		</noscript>';
 			}
 		}
@@ -615,9 +733,9 @@ class tx_rgsmoothgallery_pi1 extends tslib_pibase {
 		}
 		return $content;
 	}
-	
+
 	/**
-	 * Adds a single image to the gallery 
+	 * Adds a single image to the gallery
 	 *
 	 * @param	string  $path: Path to the image
 	 * @param	string  $title: Title for the image
@@ -633,7 +751,7 @@ class tx_rgsmoothgallery_pi1 extends tslib_pibase {
 		if ($limitImages > 1 || $limitImages == 0) {
 			$this->config['count'] ++;
 		}
-		
+
 		//  generate images
 		if ($this->config['watermarks']) {
 			$imgTSConfigBig = $this->conf['big2.'];
@@ -647,35 +765,37 @@ class tx_rgsmoothgallery_pi1 extends tslib_pibase {
 			$imgTSConfigLightbox['file'] = $path;
 		}
 		$bigImage = $this->cObj->IMG_RESOURCE( $imgTSConfigBig );
-		
-		$lightbox = ($lightbox == '#' || $lightbox == '' || $this->config['lightbox'] != 1) ? 'javascript:void(0)' : $this->cObj->IMG_RESOURCE( $imgTSConfigLightbox );
-		$lightbox = str_replace( ' ', '%20', $lightbox ); // search for empty chars, thx maxhb  
+
+		$lightbox = /*($lightbox == '#' || $lightbox == '' || $this->config['lightbox'] != 1) ? 'javascript:void(0)' : */ $this->cObj->IMG_RESOURCE( $imgTSConfigLightbox );
+		$lightbox = str_replace( ' ', '%20', $lightbox ); // search for empty chars, thx maxhb
 		$lightBoxImage = '<a href="' . $lightbox . '" title="' . $this->pi_getLL( 'textOpenImage' ) . '" class="open"></a>';
-		
+
 		if ($thumb) {
 			$imgTSConfigThumb = $this->conf['thumb.'];
 			$imgTSConfigThumb['file'] = $path;
-			$thumbImage = '<img src="' . $this->cObj->IMG_RESOURCE( $imgTSConfigThumb ) . '" class="thumbnail" />';
+#			$thumbImage = '<img src="' . $this->cObj->IMG_RESOURCE( $imgTSConfigThumb ) . '" class="thumbnail" />';
+			$thumbImage = $this->cObj->IMG_RESOURCE( $imgTSConfigThumb );
 		}
-		
+
 		// just add the wraps if there is a text for it or if there is no lightbox which needs the title of course!
 		if ($this->config['hideInfoPane'] != 1 || $lightbox != 'javascript:void(0)') {
 			$text = (! $title) ? '' : "<h3>$title</h3>";
 			$text .= (! $description) ? '' : "<p>$description</p>";
 		}
-		
+
 		// if just 1 image should be returned
 		if ($limitImages == 1) {
 			return '<img src="' . $bigImage . '" class="full" />';
 		}
-		
-		// build the image element    
-		$singleImage .= '
-      <div class="imageElement">' . $text . $lightBoxImage . '
-        <img src="' . $bigImage . '" class="full" />
-        ' . $thumbImage . '
-      </div>';
-		
+
+		// build the image element
+		$singleImage = '<img
+			class="rsImg"
+     		src="' . $bigImage . '"
+			data-rsTmb="' . $thumbImage . '"
+			data-rsBigImg="' . $lightbox . '"
+			/>';
+
 		// Adds hook for processing the image
 		$config['path'] = $path;
 		$config['title'] = $title;
@@ -691,7 +811,7 @@ class tx_rgsmoothgallery_pi1 extends tslib_pibase {
 				$singleImage = $_procObj->extraImageProcessor( $singleImage, $config, $this );
 			}
 		}
-		
+
 		return $singleImage;
 	}
 	
